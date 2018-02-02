@@ -1,6 +1,6 @@
 {
   "name": "sfadless/http",
-  "description": "Make http get/post requests",
+  "description": "Small library for get/post requests",
   "require": {
     "php": ">=5.4"
   },
