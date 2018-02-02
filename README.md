@@ -9,7 +9,7 @@ composer require Sfadless/http
 ```
 ### Usage
 
-####Basic usage
+#### Basic usage
 ```php
 use Sfadless\Utils\Http\Http;
 
@@ -54,7 +54,7 @@ $headers = [
 $response = $http->post('http://some.url', $params, $headers);
 ```
 
-####JSON response
+#### JSON response
 By default, return values is string. If you want json response, pass it to constructor.
 Return value would converts to array by php json_decode function. If cant, it will throw a SimpleHttpException.
 ```php
