@@ -19,19 +19,6 @@ $http = new Http();
 
 $response = $http->get('http://some.url');
 $response = $http->post('http://some.url');
-
-$params = [
-    'param1' => 'value',
-    'param2' => 'value2'
-];
-
-$headers = [
-    'header1' => 'value',
-    'header2' => 'value'
-];
-
-$response = $http->post('http://some.url', $params, $headers);
-
 ```
 #### Usage with params and headers
 ```php
