@@ -30,7 +30,7 @@ $headers = [
     'header2' => 'value'
 ];
 
-$response = $http->post('http://some.url', $params);
+$response = $http->post('http://some.url', $params, $headers);
 
 ```
 #### Usage with params and headers
