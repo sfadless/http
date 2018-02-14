@@ -6,19 +6,29 @@ interface SimpleHttpInterface
 {
     /**
      * @param $url string
-     * @param array $params
+     * @param $params mixed
      * @param array $headers
      *
      * @return mixed
      */
-    public function get($url, array $params = [], array $headers = []);
+    public function get($url, $params, array $headers = []);
 
     /**
      * @param $url string
-     * @param array $params
+     * @param $params mixed
      * @param array $headers
      *
      * @return mixed
      */
-    public function post($url, array $params = [], array $headers = []);
+    public function post($url, $params, array $headers = []);
+
+    /**
+     * @param $url string
+     * @param $method string
+     * @param $params mixed
+     * @param array $headers
+     *
+     * @return mixed
+     */
+    public function request($url, $method, $params, array $headers = []);
 }

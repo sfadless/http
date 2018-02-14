@@ -1,6 +1,4 @@
-# HTTP
-
-Small library for get/post requests
+# HTTP small library for get/post requests
 
 ## Documentation
 ### Instalation
@@ -41,18 +39,19 @@ $headers = [
 $response = $http->post('http://some.url', $params, $headers);
 ```
 
-#### JSON response
-By default, return values is string. If you want json response, pass it to constructor.
-Return value would converts to array by php json_decode function. If cant, it will throw a SimpleHttpException.
+#### Request and response formats
+By default, response value is string and request value is array. If your service always return specific format (for example - json), you may pass those formats in constructor  
 ```php
 use Sfadless\Utils\Http\Http;
-use Sfadless\Utils\Http\SimpleHttpException;
+use Sfadless\Utils\Http\Format\Request\ArrayRequestFormat;
+use Sfadless\Utils\Http\Format\Response\JsonResponseFormat;
 
-try {
-    $http = new Http('json');
-    
-    $response = $http->post('http://some.url')
-} catch (SimpleHttpException $e) {
-    //do something    
-}
+$http = new Http(
+    new ArrayRequestFormat(), //instanse of RequestFormatInterface, used by default
+    new JsonResponseFormat(), //instanse of ResponseFormatInterface, response value will be passed throught getFormattedResponse method
+);
+
 ```
+You may create your own formats for request and response by implementing RequestFormatInterface and ResponseFormatInterface.
+In request, you should create formatParams() method, in which will be passed $params (second argument for ->post() and ->get() methods), and return value for stream context option.
+For response format, you should implement getFormattedResponse() method, this is the layer between response from server and you code.

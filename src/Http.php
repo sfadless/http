@@ -1,6 +1,10 @@
 <?php
 
 namespace Sfadless\Utils\Http;
+use Sfadless\Utils\Http\Format\Request\ArrayRequestFormat;
+use Sfadless\Utils\Http\Format\Request\RequestFormatInterface;
+use Sfadless\Utils\Http\Format\Response\ResponseFormatInterface;
+use Sfadless\Utils\Http\Format\Response\StringResponseFormat;
 
 /**
  * Http
@@ -9,91 +13,78 @@ namespace Sfadless\Utils\Http;
  */
 class Http implements SimpleHttpInterface
 {
-    const JSON_FORMAT = 'json';
-
-    const STRING_FORMAT = 'string';
+    /**
+     * @var RequestFormatInterface
+     */
+    private $requestFormat;
 
     /**
-     * @var string
+     * @var ResponseFormatInterface
      */
-    private $returnFormat;
-
-    /**
-     * {@inheritdoc}
-     */
-    public function post($url, array $params = [], array $headers = [])
-    {
-        return $this->request($url, $params, $headers, true);
-    }
+    private $responseFormat;
 
     /**
      * {@inheritdoc}
      */
-    public function get($url, array $params = [], array $headers = [])
+    public function post($url, $params, array $headers = [])
     {
-        return $this->request($url, $params, $headers, false);
+        return $this->request($url, 'POST', $params, $headers);
     }
 
     /**
-     * @param $url
-     * @param array $data
-     * @param array $headers
-     * @param $post
-     * @return mixed
-     * @throws SimpleHttpException
+     * {@inheritdoc}
      */
-    private function request($url, array $data = [], array $headers = [], $post)
+    public function get($url, $params, array $headers = [])
     {
-        $ch = curl_init();
-
-        curl_setopt($ch,CURLOPT_URL, $url);
-        curl_setopt($ch,CURLOPT_POST, $post);
-        curl_setopt($ch,CURLOPT_POSTFIELDS, http_build_query($data));
-        curl_setopt($ch,CURLOPT_RETURNTRANSFER, true);
-
-        if (count($headers) > 0) {
-            $headersForSend = [];
-
-            foreach ($headers as $header => $value) {
-                $headersForSend[] = "{$header}: {$value}";
-            }
-
-            curl_setopt($ch, CURLOPT_HTTPHEADER, $headersForSend);
+        if (is_array($params) && count($params) > 0) {
+            $url = $url . '?' . http_build_query($params);
         }
 
-        $result = curl_exec($ch);
-
-        curl_close($ch);
-
-        if ($this->returnFormat === self::JSON_FORMAT) {
-            return $this->returnJson($result);
-        }
-
-        return $result;
+        return $this->request($url, 'GET', $params, $headers);
     }
 
     /**
-     * @param $result
-     * @return mixed
-     * @throws SimpleHttpException
+     * {@inheritdoc}
      */
-    private function returnJson($result)
+    public function request($url, $method, $params = [], array $headers = [])
     {
-        $returned = json_decode($result, true);
+        $options = [
+            'http' => [
+                'method' => $method,
+                "header" => "Content-type: application/x-www-form-urlencoded\r\n",
+                "content" => $this->requestFormat->formatParams($params)
+            ]
+        ];
 
-        if (!$returned) {
-            throw new SimpleHttpException('Response is not in JSON format');
+        $context = stream_context_create($options);
+
+        $content = file_get_contents($url, false, $context);
+
+        if (false === $content) {
+            return false;
         }
 
-        return $returned;
+        return $this->responseFormat->getFormattedResponse($content);
     }
 
     /**
      * Http constructor.
-     * @param string $format
+     * @param RequestFormatInterface|null $requestFormat
+     * @param ResponseFormatInterface|null $responseFormat
      */
-    public function __construct($format = self::STRING_FORMAT)
-    {
-        $this->returnFormat = $format;
+    public function __construct(
+        RequestFormatInterface $requestFormat = null,
+        ResponseFormatInterface $responseFormat = null
+    ) {
+        $this->requestFormat = $requestFormat;
+        $this->responseFormat = $responseFormat;
+
+        if (null === $this->requestFormat) {
+            $this->requestFormat = new ArrayRequestFormat();
+        }
+
+        if (null === $this->responseFormat) {
+            $this->responseFormat = new StringResponseFormat();
+        }
     }
 }
